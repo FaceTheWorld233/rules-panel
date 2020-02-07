@@ -91,11 +91,6 @@ Debian:
 
 *https://baidu.com/api 为您的主控URI，请自行替换为您的域名
 
-
-# 被控端部署教程-NodeJS版(此版本不推荐使用，建议使用Golang版):
-
-推荐使用Golang版被控端，如果需要使用此版本，请自行研究！
-
 *更换Golang需要关闭nodejs被控，以免引起混乱
 
 `pm2 delete 0`
@@ -104,6 +99,88 @@ Debian:
 
 然后删除nodejs相关文件即可
 
+# 被控端部署教程-NodeJS版(此版本不推荐使用，建议使用Golang版):
+
+#安装nodejs最新版（centos）
+
+`yum install epel-* -y`
+
+`yum install nodejs -y`
+
+`npm install n -g`
+
+`n latest`
+
+`npm install pm2 -g`
+
+#安装nodejs最新版（debian）
+
+`curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash - && apt-get install nodejs`
+
+`npm install pm2 -g`
+
+#nodejs和pm2安装结束
+
+#pm2开机自启
+
+`pm2 startup`
+
+#新建文件夹iptables_forward
+
+`mkdir iptables_forward`
+
+#将 app.js、package.json两个文件放进去
+
+#修改app.js文件，如下三处，保存
+
+​	`const master_url = "https://baidu.com"  #填写Master URL`
+
+​	`const slave_key = '123456'; #填写节点key`
+
+​	`const nic_ip = '1.1.1.1'; #主网卡上的IP（如果主网卡IP=公网IP时，当IP变动，需更新此处IP，并且重启本进程！！！）`
+
+
+
+*Mater URL是主控的网址
+
+*key是主控添加服务器后生成的
+
+*主网卡IP查看方法：`ip addr`
+
+#然后在该文件夹下执行
+
+`npm install` 
+
+#安装iptables转发（逗比转发脚本）
+
+`wget http://ftp.inwang.net/iptables-pf.sh && chmod +x iptables-pf.sh`
+
+#执行iptables转发脚本，执行第一个选项安装iptables
+
+#启动
+
+`pm2 start app.js`
+
+#开机自启
+
+`pm2 save`
+
+#重启服务器 
+
+`reboot`     
+
+#********到此安装结束，可以愉快地使用了
+
+##### #其他命令
+
+`pm2 list`       #查询
+
+`pm2 logs 0`  #查询日志
+
+`pm2 stop 0` #暂停
+
+`pm2 flush`   #清除日志
+
 
 #### #错误分析
 
@@ -111,3 +188,4 @@ Debian:
 2. 添加完服务器却找不到：给用户分配权限
 3. 如果你的小鸡是NAT，主网卡ip应该为内网ip(通常为10.开头)
 4. 端口不通：放行iptables防火墙。如果是centos 需要卸载firwall启用iptables
+5. 如果你的小鸡是NAT，app.js里的ip应该为内网ip
